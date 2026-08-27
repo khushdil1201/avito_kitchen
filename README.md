@@ -1,42 +1,41 @@
-# Avito Kitchen
+# Авито.Кухня
 
-Avito Kitchen is an MVP food-ordering platform. It exposes an API for the web
-client and an integration API for partner restaurants. A separate restaurant
-service in this repository demonstrates that integration end to end.
+«Авито.Кухня» — MVP-платформа для заказа еды. Она предоставляет API для
+веб-клиента и интеграционный API для заведений-партнёров. Отдельный сервис
+заведения в этом репозитории демонстрирует полный сценарий интеграции.
 
-## MVP scope
+## Границы MVP
 
-The first version supports the complete ordering path:
+Первая версия поддерживает полный сценарий оформления заказа:
 
-1. A customer browses available restaurants and their menus.
-2. The customer creates an order from one restaurant.
-3. The platform validates current product availability and snapshots prices.
-4. The restaurant accepts or rejects the order through the integration API.
-5. The customer observes subsequent order status changes.
+1. Пользователь просматривает доступные заведения и их меню.
+2. Пользователь создаёт заказ из одного заведения.
+3. Платформа проверяет актуальную доступность товаров и фиксирует их цены.
+4. Заведение принимает или отклоняет заказ через интеграционный API.
+5. Пользователь отслеживает дальнейшие изменения статуса заказа.
 
-Authentication, payment processing, courier logistics, promotions, ratings,
-and full-text or geo search are intentionally outside the two-day MVP. Their
-extension points and production trade-offs will be documented as the system is
-built.
+Аутентификация, обработка платежей, курьерская логистика, промокоды, рейтинги,
+полнотекстовый и географический поиск намеренно не входят в двухдневный MVP.
+Точки расширения и компромиссы для промышленной эксплуатации будут описываться
+по мере разработки системы.
 
-## Planned architecture
+## Планируемая архитектура
 
-- **Platform API:** Python, FastAPI, Pydantic, and `asyncpg` with explicit SQL.
-- **Restaurant service:** a separate FastAPI application acting as one partner.
-- **Database:** PostgreSQL with versioned SQL migrations.
-- **Integration:** synchronous HTTP for commands and idempotent callbacks for
-  restaurant status updates.
-- **Runtime:** Docker Compose.
-- **Quality:** Ruff, mypy, pytest, and HTTP integration tests.
-- **Documentation:** generated OpenAPI plus Mermaid source for C4, ER, and CJM
-  diagrams.
+- **API платформы:** Python, FastAPI, Pydantic и `asyncpg` с явными SQL-запросами.
+- **Сервис заведения:** отдельное FastAPI-приложение, имитирующее одного партнёра.
+- **База данных:** PostgreSQL с версионируемыми SQL-миграциями.
+- **Интеграция:** синхронные HTTP-команды и идемпотентные обратные вызовы для
+  обновления статусов со стороны заведения.
+- **Запуск:** Docker Compose.
+- **Качество:** Ruff, mypy, pytest и интеграционные HTTP-тесты.
+- **Документация:** генерируемая OpenAPI-спецификация и исходники Mermaid для
+  диаграмм C4, ER и CJM.
 
-Detailed design decisions and local launch instructions will be added alongside
-the relevant implementation so the documentation remains executable and
-consistent with the code.
+Подробные архитектурные решения и инструкция локального запуска будут
+добавляться вместе с соответствующей реализацией, чтобы документация оставалась
+исполняемой и соответствовала коду.
 
-## Delivery plan
+## План разработки
 
-See [docs/PLAN.md](docs/PLAN.md) for the staged implementation plan and the AI
-working prompt required by the assignment.
-
+Поэтапный план и рабочий промпт для ИИ, требуемый заданием, находятся в
+[docs/PLAN.md](docs/PLAN.md).

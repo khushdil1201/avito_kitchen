@@ -1,75 +1,80 @@
-# Implementation plan
+# План реализации
 
-This document is both the delivery plan and the AI working prompt for the
-project. Each stage must be independently reviewable, tested where applicable,
-and committed before the next stage starts.
+Этот документ одновременно является планом разработки и рабочим промптом для
+ИИ. Каждый этап должен независимо проверяться, при необходимости покрываться
+тестами и фиксироваться отдельным коммитом до начала следующего этапа.
 
-## Engineering principles
+## Инженерные принципы
 
-- Keep the MVP small but complete: every declared scenario must work end to end.
-- Use explicit SQL and transaction boundaries; do not introduce an ORM.
-- Keep HTTP, application, and persistence concerns separate.
-- Validate state transitions in one place and make externally retried operations
-  idempotent.
-- Snapshot mutable menu data in orders so order history remains correct.
-- Prefer constraints in PostgreSQL for invariants the database can enforce.
-- Add infrastructure only when a current scenario requires it; document future
-  scaling paths instead of simulating production complexity.
+- Сохранять MVP небольшим, но законченным: каждый заявленный сценарий должен
+  работать от начала до конца.
+- Использовать явные SQL-запросы и границы транзакций, не добавлять ORM.
+- Разделять HTTP-слой, прикладную логику и слой хранения данных.
+- Проверять переходы состояний в одном месте и обеспечивать идемпотентность
+  операций, которые внешние системы могут повторять.
+- Фиксировать изменяемые данные меню внутри заказа, чтобы история заказов
+  оставалась корректной.
+- Использовать ограничения PostgreSQL для инвариантов, которые может обеспечить
+  база данных.
+- Добавлять инфраструктуру только тогда, когда она нужна текущему сценарию;
+  будущие пути масштабирования описывать в документации.
 
-## Stages
+## Этапы
 
-1. **Repository foundation** — scope, plan, ignore rules, and Git history.
-2. **Application skeleton** — package layout, dependency configuration, health
-   endpoint, linting, typing, and a minimal test.
-3. **Persistence foundation** — PostgreSQL Compose service, migration runner,
-   connection pool, initial relational schema, and ER diagram.
-4. **Customer catalogue** — list restaurants, retrieve a menu, filtering and
-   pagination, with repository and API tests.
-5. **Ordering** — transactional order creation, price snapshots, availability
-   checks, idempotency, order lookup, and state-machine tests.
-6. **Restaurant integration** — partner API, example restaurant service,
-   acceptance/rejection and subsequent status callbacks.
-7. **Operational hardening** — structured errors and logs, timeouts, readiness,
-   container health checks, and graceful shutdown.
-8. **Acceptance documentation** — customer and restaurant CJMs, C4 diagrams,
-   OpenAPI export, architecture decisions, limitations, and runbook.
-9. **Final verification** — clean Compose build, migrations, automated tests,
-   linters, type checks, and manual end-to-end smoke test.
+1. **Основа репозитория** — границы MVP, план, правила игнорирования и история Git.
+2. **Каркас приложения** — структура пакетов, зависимости, эндпоинт проверки
+   состояния, линтинг, проверка типов и минимальный тест.
+3. **Основа хранения данных** — PostgreSQL в Docker Compose, запуск миграций,
+   пул соединений, начальная реляционная схема и ER-диаграмма.
+4. **Пользовательский каталог** — список заведений, получение меню, фильтрация и
+   пагинация, тесты репозитория и API.
+5. **Заказы** — транзакционное создание заказа, фиксация цен, проверка
+   доступности, идемпотентность, получение заказа и тесты машины состояний.
+6. **Интеграция с заведением** — партнёрский API, пример сервиса заведения,
+   принятие или отклонение заказа и последующие обратные вызовы статусов.
+7. **Эксплуатационная надёжность** — структурированные ошибки и журналы,
+   тайм-ауты, readiness-проверки, healthcheck контейнеров и корректное завершение.
+8. **Приёмочная документация** — CJM пользователя и заведения, C4-диаграммы,
+   экспорт OpenAPI, архитектурные решения, ограничения и инструкция запуска.
+9. **Финальная проверка** — чистая сборка Docker Compose, миграции,
+   автоматические тесты, линтеры, проверка типов и ручной сквозной smoke-тест.
 
-## Two-day target
+## План на два дня
 
-### Day 1
+### День 1
 
-- Complete stages 1–5.
-- Finish the customer ordering path against PostgreSQL.
-- Keep unit and integration tests green after each stage.
+- Завершить этапы 1–5.
+- Реализовать пользовательский сценарий заказа с PostgreSQL.
+- Поддерживать успешное прохождение модульных и интеграционных тестов после
+  каждого этапа.
 
-### Day 2
+### День 2
 
-- Complete stages 6–9.
-- Exercise the real cross-service flow through Docker Compose.
-- Review documentation against every acceptance criterion.
+- Завершить этапы 6–9.
+- Проверить реальный межсервисный сценарий через Docker Compose.
+- Сверить документацию со всеми критериями приёмки.
 
-## Initial domain decisions
+## Начальные доменные решения
 
-- One order contains products from exactly one restaurant.
-- A menu item may become unavailable between catalogue viewing and checkout;
-  checkout revalidates it and returns a conflict without creating a partial
-  order.
-- Prices are integer minor units with an ISO currency code; floating-point money
-  is forbidden.
-- The platform owns the order identifier and state machine. Restaurant-local
-  identifiers are stored as external references rather than reused as primary
-  keys.
-- The client supplies an idempotency key when creating an order. Repeating the
-  same request returns the original result; reusing the key for different input
-  is rejected.
-- No user authentication is implemented per the assignment. A temporary
-  `customer_id` carried by requests represents the future identity boundary.
+- Один заказ содержит товары ровно из одного заведения.
+- Товар может стать недоступным между просмотром каталога и оформлением заказа;
+  при оформлении доступность проверяется повторно, а при конфликте заказ не
+  создаётся даже частично.
+- Денежные суммы хранятся целыми числами в минимальных единицах вместе с кодом
+  валюты ISO; числа с плавающей точкой для денег запрещены.
+- Платформа владеет идентификатором заказа и машиной состояний. Локальные
+  идентификаторы заведения хранятся как внешние ссылки и не используются в
+  качестве первичных ключей.
+- При создании заказа клиент передаёт ключ идемпотентности. Повтор того же
+  запроса возвращает исходный результат, а использование ключа с другими
+  данными отклоняется.
+- Согласно заданию аутентификация пользователей не реализуется. Временный
+  `customer_id` в запросах обозначает будущую границу идентификации.
 
-## Definition of done
+## Критерий завершённости
 
-The repository is complete when a reviewer can clone it, run one documented
-Docker Compose command, observe healthy services, execute the documented
-customer and restaurant journeys, inspect versioned SQL migrations and OpenAPI,
-and run all quality checks locally.
+Репозиторий считается завершённым, когда проверяющий может клонировать его,
+запустить одной документированной командой Docker Compose, увидеть исправные
+сервисы, пройти описанные сценарии пользователя и заведения, изучить
+версионируемые SQL-миграции и OpenAPI, а также локально запустить все проверки
+качества.
