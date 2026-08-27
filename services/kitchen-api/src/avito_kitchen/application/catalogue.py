@@ -64,4 +64,3 @@ class CatalogueService:
             limit=limit,
             offset=offset,
         )
-

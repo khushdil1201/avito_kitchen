@@ -38,9 +38,18 @@
 ## План разработки
 
 Поэтапный план и рабочий промпт для ИИ, требуемый заданием, находятся в
-[docs/PLAN.md](docs/PLAN.md).
+[AI_PLAN.md](AI_PLAN.md).
 
-Описание таблиц и ER-диаграмма находятся в [docs/database.md](docs/database.md).
+ER-схема базы данных находится в [docs/database.puml](docs/database.puml).
+
+## Структура репозитория
+
+- `services/kitchen-api` — основной API платформы.
+- `services/restaurant-api` — пример интеграции заведения.
+- `migrations` — версионируемые SQL-миграции общей базы данных.
+- `tests` — автоматические тесты бизнес-сценариев и HTTP-контрактов.
+- `docs` — CJM, C4 и ER-диаграммы в формате PlantUML.
+- `openapi` — зафиксированная OpenAPI-спецификация.
 
 ## Локальная разработка
 

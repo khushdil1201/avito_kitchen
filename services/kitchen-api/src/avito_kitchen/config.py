@@ -20,4 +20,3 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Вернуть неизменяемый для процесса набор настроек."""
     return Settings()
-

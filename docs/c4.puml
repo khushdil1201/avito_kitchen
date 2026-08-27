@@ -1,0 +1,20 @@
+@startuml c4
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Авито.Кухня — C4 Container
+
+Person(customer, "Пользователь", "Выбирает блюда и отслеживает заказ")
+Person(partner, "Заведение", "Принимает заказ и обновляет его статус")
+
+System_Boundary(kitchen, "Авито.Кухня") {
+  Container(kitchen_api, "Kitchen API", "Python, FastAPI", "Каталог и жизненный цикл заказов")
+  Container(restaurant_api, "Restaurant API", "Python, FastAPI", "Пример интеграции заведения")
+  ContainerDb(postgres, "PostgreSQL", "PostgreSQL 17", "Каталог, заказы и идемпотентность")
+}
+
+Rel(customer, kitchen_api, "Использует", "HTTPS/JSON")
+Rel(kitchen_api, postgres, "Читает и изменяет", "SQL/asyncpg")
+Rel(kitchen_api, restaurant_api, "Передаёт заказы", "HTTP/JSON")
+Rel(restaurant_api, kitchen_api, "Обновляет статусы", "HTTP/JSON")
+Rel(partner, restaurant_api, "Управляет обработкой заказов", "HTTP/JSON")
+@enduml

@@ -17,7 +17,9 @@ services:
       start_period: 5s
 
   migrate:
-    build: .
+    build:
+      context: .
+      dockerfile: services/kitchen-api/Dockerfile
     command: ["python", "-m", "avito_kitchen.infrastructure.migrations"]
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://avito_kitchen:avito_kitchen@postgres:5432/avito_kitchen}
@@ -26,8 +28,10 @@ services:
         condition: service_healthy
     restart: "no"
 
-  api:
-    build: .
+  kitchen-api:
+    build:
+      context: .
+      dockerfile: services/kitchen-api/Dockerfile
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://avito_kitchen:avito_kitchen@postgres:5432/avito_kitchen}
     ports:
