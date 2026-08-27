@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from avito_kitchen.config import Settings, get_settings
 from avito_kitchen.infrastructure.database import Database
+from avito_kitchen.presentation.http.catalogue import router as catalogue_router
 from avito_kitchen.presentation.http.health import router as health_router
 
 
@@ -33,6 +34,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.include_router(health_router, prefix="/api/v1")
+    app.include_router(catalogue_router, prefix="/api/v1")
     return app
 
 
