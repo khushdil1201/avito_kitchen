@@ -1,5 +1,5 @@
 @startuml database
-title Авито.Кухня — схема данных
+title Авито.Кухня — ER-схема PostgreSQL
 hide methods
 hide stereotypes
 skinparam linetype ortho
@@ -7,77 +7,100 @@ skinparam linetype ortho
 entity establishments {
   * id : uuid <<PK>>
   --
-  external_id : text <<UK>>
-  name : text
-  description : text
-  currency : char(3)
-  is_active : boolean
-  created_at : timestamptz
-  updated_at : timestamptz
+  external_id : text <<UK, NOT NULL>>
+  name : text <<NOT NULL>>
+  description : text <<NOT NULL>>
+  currency : char(3) <<NOT NULL>>
+  is_active : boolean <<NOT NULL>>
+  created_at : timestamptz <<NOT NULL>>
+  updated_at : timestamptz <<NOT NULL>>
 }
 
 entity menu_items {
   * id : uuid <<PK>>
   --
-  establishment_id : uuid <<FK>>
-  external_id : text
-  name : text
-  description : text
-  price_minor : bigint
-  is_available : boolean
+  establishment_id : uuid <<FK, NOT NULL>>
+  external_id : text <<NOT NULL>>
+  name : text <<NOT NULL>>
+  description : text <<NOT NULL>>
+  price_minor : bigint <<NOT NULL, > 0>>
+  is_available : boolean <<NOT NULL>>
+  created_at : timestamptz <<NOT NULL>>
+  updated_at : timestamptz <<NOT NULL>>
+  --
+  UK (establishment_id, external_id)
+  UK (id, establishment_id)
 }
 
 entity orders {
   * id : uuid <<PK>>
   --
-  customer_id : uuid
-  establishment_id : uuid <<FK>>
-  status : text
-  currency : char(3)
-  total_minor : bigint
-  delivery_address : text
-  external_id : text
+  customer_id : uuid <<NOT NULL>>
+  establishment_id : uuid <<FK, NOT NULL>>
+  status : text <<NOT NULL>>
+  currency : char(3) <<NOT NULL>>
+  total_minor : bigint <<NOT NULL, > 0>>
+  delivery_address : text <<NOT NULL>>
+  external_id : text <<NULLABLE>>
+  created_at : timestamptz <<NOT NULL>>
+  updated_at : timestamptz <<NOT NULL>>
+  --
+  UK (establishment_id, external_id)
+  UK (id, establishment_id)
 }
 
 entity order_items {
   * order_id : uuid <<PK, FK>>
   * menu_item_id : uuid <<PK, FK>>
   --
-  establishment_id : uuid <<FK>>
-  name : text
-  price_minor : bigint
-  quantity : integer
+  establishment_id : uuid <<FK, NOT NULL>>
+  name : text <<NOT NULL>>
+  price_minor : bigint <<NOT NULL, > 0>>
+  quantity : integer <<NOT NULL, 1..100>>
 }
 
 entity order_status_history {
-  * id : bigint <<PK>>
+  * id : bigint identity <<PK>>
   --
-  order_id : uuid <<FK>>
-  from_status : text
-  to_status : text
-  actor : text
-  created_at : timestamptz
+  order_id : uuid <<FK, NOT NULL>>
+  from_status : text <<NULLABLE>>
+  to_status : text <<NOT NULL>>
+  actor : text <<NOT NULL>>
+  created_at : timestamptz <<NOT NULL>>
 }
 
 entity idempotency_keys {
   * scope : text <<PK>>
   * key : text <<PK>>
   --
-  request_hash : char(64)
-  resource_id : uuid
-  created_at : timestamptz
+  request_hash : char(64) <<NOT NULL>>
+  resource_id : uuid <<NOT NULL>>
+  created_at : timestamptz <<NOT NULL>>
 }
 
-establishments ||--o{ menu_items
-establishments ||--o{ orders
-orders ||--|{ order_items
-menu_items ||--o{ order_items
-orders ||--o{ order_status_history
+establishments ||--o{ menu_items : содержит
+establishments ||--o{ orders : принимает
+orders ||--|{ order_items : состоит из
+menu_items ||--o{ order_items : снимок позиции
+orders ||--o{ order_status_history : имеет историю
+idempotency_keys ..> orders : resource_id (логическая ссылка)
 
-note right of order_items
-  Название и цена являются снимком:
-  изменения меню не меняют историю заказа.
-  Составные внешние ключи гарантируют,
-  что заказ и блюдо принадлежат одному заведению.
+note right of orders
+  Допустимые состояния:
+  created, accepted, rejected, preparing,
+  ready, delivering, completed, cancelled.
+end note
+
+note bottom of order_items
+  name и price_minor — неизменяемый снимок меню.
+  Составные внешние ключи гарантируют, что заказ
+  и выбранные блюда относятся к одному заведению.
+end note
+
+note bottom of idempotency_keys
+  Пара (scope, key) уникальна. request_hash отличает
+  безопасный повтор от конфликта повторного запроса.
+  resource_id намеренно не имеет физического FK,
+  чтобы таблица могла обслуживать разные типы ресурсов.
 end note
 @enduml
