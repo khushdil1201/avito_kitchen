@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     )
     database_pool_min_size: int = 1
     database_pool_max_size: int = 10
+    log_level: str = "INFO"
     partner_api_token: SecretStr = SecretStr("demo-partner-token-change-me")
     partner_restaurant_id: UUID = UUID("10000000-0000-4000-8000-000000000001")
 

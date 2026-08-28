@@ -36,6 +36,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://avito_kitchen:avito_kitchen@postgres:5432/avito_kitchen}
       PARTNER_API_TOKEN: ${PARTNER_API_TOKEN:-demo-partner-token-change-me}
       PARTNER_RESTAURANT_ID: ${PARTNER_RESTAURANT_ID:-10000000-0000-4000-8000-000000000001}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "${API_PORT:-8080}:8000"
     depends_on:
@@ -61,6 +62,7 @@ services:
     environment:
       KITCHEN_API_URL: ${KITCHEN_API_URL:-http://kitchen-api:8000}
       PARTNER_API_TOKEN: ${PARTNER_API_TOKEN:-demo-partner-token-change-me}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "${RESTAURANT_API_PORT:-8081}:8000"
     depends_on:

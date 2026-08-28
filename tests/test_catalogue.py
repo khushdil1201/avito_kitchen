@@ -97,4 +97,5 @@ def test_get_menu_returns_not_found_for_unknown_restaurant() -> None:
     response = asyncio.run(request(f"/api/v1/restaurants/{unknown_id}/menu"))
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Заведение не найдено"}
+    assert response.json()["error"]["code"] == "not_found"
+    assert response.json()["error"]["message"] == "Заведение не найдено"

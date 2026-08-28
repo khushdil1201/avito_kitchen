@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from restaurant_api.config import RestaurantSettings, get_restaurant_settings
 from restaurant_api.kitchen_client import KitchenAPIError, KitchenClient
 from restaurant_api.models import Order, OrderList, OrderStatus
+from restaurant_api.observability import configure_logging, install_observability
 
 
 class HealthResponse(BaseModel):
@@ -84,13 +85,16 @@ def _upstream_http_error(error: KitchenAPIError) -> HTTPException:
     return HTTPException(status_code=status_code, detail=error.detail)
 
 
-def create_app() -> FastAPI:
+def create_app(settings: RestaurantSettings | None = None) -> FastAPI:
     """Создать HTTP-приложение демонстрационного заведения."""
+    resolved_settings = settings or get_restaurant_settings()
+    configure_logging(resolved_settings.log_level)
     app = FastAPI(
         title="Тестовая кухня API",
         summary="Пример интеграции заведения и Авито.Кухни",
         version="0.1.0",
     )
+    install_observability(app)
 
     @app.get("/health", response_model=HealthResponse, tags=["Состояние сервиса"])
     async def health() -> HealthResponse:

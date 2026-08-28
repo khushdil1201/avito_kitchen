@@ -153,4 +153,4 @@ def test_partner_transition_is_validated_and_repeat_is_safe() -> None:
     assert accepted.status_code == 200
     assert replay.status_code == 200
     assert invalid.status_code == 409
-    assert invalid.json()["detail"]["current"] == "accepted"
+    assert invalid.json()["error"]["details"]["current"] == "accepted"

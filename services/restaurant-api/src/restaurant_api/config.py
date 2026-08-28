@@ -12,10 +12,10 @@ class RestaurantSettings(BaseSettings):
     kitchen_api_url: AnyHttpUrl = AnyHttpUrl("http://kitchen-api:8000")
     partner_api_token: SecretStr = SecretStr("demo-partner-token-change-me")
     kitchen_api_timeout_seconds: float = Field(default=3.0, gt=0, le=30)
+    log_level: str = "INFO"
 
 
 @lru_cache
 def get_restaurant_settings() -> RestaurantSettings:
     """Вернуть настройки сервиса заведения."""
     return RestaurantSettings()
-

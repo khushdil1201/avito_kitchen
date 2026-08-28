@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from avito_kitchen.config import Settings, get_settings
 from avito_kitchen.infrastructure.database import Database
+from avito_kitchen.observability import configure_logging, install_observability
 from avito_kitchen.presentation.http.catalogue import router as catalogue_router
 from avito_kitchen.presentation.http.health import router as health_router
 from avito_kitchen.presentation.http.orders import router as orders_router
@@ -14,6 +15,7 @@ from avito_kitchen.presentation.http.partner_orders import router as partner_ord
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Создать и настроить экземпляр HTTP-приложения."""
     resolved_settings = settings or get_settings()
+    configure_logging(resolved_settings.log_level)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -35,6 +37,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+    install_observability(app)
     app.include_router(health_router, prefix="/api/v1")
     app.include_router(catalogue_router, prefix="/api/v1")
     app.include_router(orders_router, prefix="/api/v1")

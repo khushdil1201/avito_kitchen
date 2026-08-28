@@ -136,7 +136,10 @@ def test_reusing_key_with_different_request_returns_conflict() -> None:
     status_code, body = asyncio.run(scenario())
 
     assert status_code == 409
-    assert body == {"detail": "Ключ идемпотентности уже использован для другого запроса"}
+    assert body["error"]["code"] == "conflict"  # type: ignore[index]
+    assert body["error"]["message"] == (  # type: ignore[index]
+        "Ключ идемпотентности уже использован для другого запроса"
+    )
 
 
 def test_unavailable_item_rejects_whole_order() -> None:
@@ -156,7 +159,9 @@ def test_unavailable_item_rejects_whole_order() -> None:
     status_code, body = asyncio.run(scenario())
 
     assert status_code == 409
-    assert body["detail"]["item_ids"] == [str(UNAVAILABLE_ITEM_ID)]  # type: ignore[index]
+    assert body["error"]["details"]["item_ids"] == [  # type: ignore[index]
+        str(UNAVAILABLE_ITEM_ID)
+    ]
 
 
 def test_order_is_not_visible_to_another_customer() -> None:

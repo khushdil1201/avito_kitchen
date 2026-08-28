@@ -93,7 +93,8 @@ def test_restaurant_preserves_upstream_business_error() -> None:
     response = asyncio.run(request("POST", f"/api/v1/orders/{ORDER_ID}/ready", client=client))
 
     assert response.status_code == 409
-    assert response.json() == {"detail": "Недопустимый переход"}
+    assert response.json()["error"]["code"] == "conflict"
+    assert response.json()["error"]["message"] == "Недопустимый переход"
 
 
 def test_restaurant_health() -> None:
