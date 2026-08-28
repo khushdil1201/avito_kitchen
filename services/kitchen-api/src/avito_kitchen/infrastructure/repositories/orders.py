@@ -2,7 +2,6 @@ from collections.abc import Sequence
 from uuid import UUID, uuid4
 
 import asyncpg
-from asyncpg.pool import PoolConnectionProxy
 
 from avito_kitchen.domain.orders import (
     CreateOrderCommand,
@@ -14,8 +13,7 @@ from avito_kitchen.domain.orders import (
     OrderStatus,
     RestaurantUnavailableError,
 )
-
-type DatabaseConnection = asyncpg.Connection | PoolConnectionProxy[asyncpg.Record]
+from avito_kitchen.infrastructure.database import DatabaseConnection
 
 
 class PostgresOrdersRepository:

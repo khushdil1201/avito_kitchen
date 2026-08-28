@@ -1,6 +1,7 @@
 from functools import lru_cache
+from uuid import UUID
 
-from pydantic import PostgresDsn
+from pydantic import PostgresDsn, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +15,8 @@ class Settings(BaseSettings):
     )
     database_pool_min_size: int = 1
     database_pool_max_size: int = 10
+    partner_api_token: SecretStr = SecretStr("demo-partner-token-change-me")
+    partner_restaurant_id: UUID = UUID("10000000-0000-4000-8000-000000000001")
 
 
 @lru_cache

@@ -69,6 +69,14 @@ class OrderCreationResult:
     replayed: bool
 
 
+@dataclass(frozen=True, slots=True)
+class OrderTransitionResult:
+    """Результат смены статуса или безопасного повтора."""
+
+    order: Order
+    replayed: bool
+
+
 class RestaurantUnavailableError(Exception):
     """Заведение отсутствует или временно не принимает заказы."""
 
@@ -87,3 +95,23 @@ class IdempotencyConflictError(Exception):
 
 class OrderNotFoundError(Exception):
     """Заказ не существует или принадлежит другому пользователю."""
+
+
+class PartnerOrderNotFoundError(Exception):
+    """Заказ не принадлежит авторизованному заведению."""
+
+
+class InvalidOrderTransitionError(Exception):
+    """Запрошенный переход статуса запрещён машиной состояний."""
+
+    def __init__(self, current: OrderStatus, target: OrderStatus) -> None:
+        self.current = current
+        self.target = target
+        super().__init__(f"Переход {current.value} -> {target.value} запрещён")
+
+
+PARTNER_STATUS_TRANSITIONS: dict[OrderStatus, frozenset[OrderStatus]] = {
+    OrderStatus.CREATED: frozenset({OrderStatus.ACCEPTED, OrderStatus.REJECTED}),
+    OrderStatus.ACCEPTED: frozenset({OrderStatus.PREPARING}),
+    OrderStatus.PREPARING: frozenset({OrderStatus.READY}),
+}

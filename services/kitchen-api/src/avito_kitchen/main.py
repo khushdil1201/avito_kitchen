@@ -8,6 +8,7 @@ from avito_kitchen.infrastructure.database import Database
 from avito_kitchen.presentation.http.catalogue import router as catalogue_router
 from avito_kitchen.presentation.http.health import router as health_router
 from avito_kitchen.presentation.http.orders import router as orders_router
+from avito_kitchen.presentation.http.partner_orders import router as partner_orders_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -37,6 +38,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router, prefix="/api/v1")
     app.include_router(catalogue_router, prefix="/api/v1")
     app.include_router(orders_router, prefix="/api/v1")
+    app.include_router(partner_orders_router, prefix="/api/v1")
     return app
 
 

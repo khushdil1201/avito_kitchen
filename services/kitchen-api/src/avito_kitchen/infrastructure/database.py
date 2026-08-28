@@ -1,4 +1,7 @@
 import asyncpg
+from asyncpg.pool import PoolConnectionProxy
+
+type DatabaseConnection = asyncpg.Connection | PoolConnectionProxy[asyncpg.Record]
 
 
 class Database:
