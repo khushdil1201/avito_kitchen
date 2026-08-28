@@ -86,7 +86,13 @@ async def _transition(client: KitchenClient, order_id: UUID, target: OrderStatus
 
 def _upstream_http_error(error: KitchenAPIError) -> HTTPException:
     status_code = error.status_code if 400 <= error.status_code < 500 else 503
-    return HTTPException(status_code=status_code, detail=error.detail)
+    if isinstance(error.details, dict):
+        detail: str | dict[str, object] = {**error.details, "message": error.message}
+    elif error.details is not None:
+        detail = {"message": error.message, "upstream_details": error.details}
+    else:
+        detail = error.message
+    return HTTPException(status_code=status_code, detail=detail)
 
 
 def create_app(settings: RestaurantSettings | None = None) -> FastAPI:

@@ -88,13 +88,21 @@ def test_restaurant_accepts_order_through_kitchen_client() -> None:
 
 
 def test_restaurant_preserves_upstream_business_error() -> None:
-    client = FakeKitchenClient(error=KitchenAPIError(409, "Недопустимый переход"))
+    client = FakeKitchenClient(
+        error=KitchenAPIError(
+            409,
+            "Недопустимый переход статуса",
+            {"current": "created", "target": "ready"},
+        )
+    )
 
     response = asyncio.run(request("POST", f"/api/v1/orders/{ORDER_ID}/ready", client=client))
 
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "conflict"
-    assert response.json()["error"]["message"] == "Недопустимый переход"
+    assert response.json()["error"]["message"] == "Недопустимый переход статуса"
+    assert response.json()["error"]["details"]["current"] == "created"
+    assert response.json()["error"]["details"]["target"] == "ready"
 
 
 def test_restaurant_health() -> None:

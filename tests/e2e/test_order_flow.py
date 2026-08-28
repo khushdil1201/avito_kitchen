@@ -79,6 +79,14 @@ def test_real_order_flow_through_both_services_and_postgres() -> None:
         assert queue.status_code == 200
         assert order_id in {item["id"] for item in queue.json()["items"]}
 
+        invalid_transition = restaurant.post(f"/api/v1/orders/{order_id}/ready")
+        assert invalid_transition.status_code == 409
+        invalid_error = invalid_transition.json()["error"]
+        assert invalid_error["code"] == "conflict"
+        assert invalid_error["message"] == "Недопустимый переход статуса"
+        assert invalid_error["details"]["current"] == "created"
+        assert invalid_error["details"]["target"] == "ready"
+
         for action, expected_status in (
             ("accept", "accepted"),
             ("preparing", "preparing"),

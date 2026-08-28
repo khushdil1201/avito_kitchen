@@ -9,9 +9,10 @@ from restaurant_api.models import Order, OrderList, OrderStatus
 class KitchenAPIError(Exception):
     """Kitchen API вернул ошибку или оказался недоступен."""
 
-    def __init__(self, status_code: int, detail: Any) -> None:
+    def __init__(self, status_code: int, message: str, details: Any = None) -> None:
         self.status_code = status_code
-        self.detail = detail
+        self.message = message
+        self.details = details
         super().__init__(f"Kitchen API error: {status_code}")
 
 
@@ -48,9 +49,33 @@ class KitchenClient:
             raise KitchenAPIError(503, "Kitchen API недоступен") from error
 
         if response.is_error:
-            try:
-                detail = response.json().get("detail", response.text)
-            except ValueError:
-                detail = response.text
-            raise KitchenAPIError(response.status_code, detail)
+            raise _parse_error_response(response)
         return response.json()
+
+
+def _parse_error_response(response: httpx.Response) -> KitchenAPIError:
+    """Преобразовать ошибочный ответ платформы в типизированную ошибку клиента."""
+    fallback_message = response.text or "Kitchen API вернул ошибку"
+    try:
+        payload = response.json()
+    except ValueError:
+        return KitchenAPIError(response.status_code, fallback_message)
+
+    if not isinstance(payload, dict):
+        return KitchenAPIError(response.status_code, fallback_message, payload)
+
+    envelope = payload.get("error")
+    if isinstance(envelope, dict):
+        message = envelope.get("message")
+        if isinstance(message, str):
+            return KitchenAPIError(response.status_code, message, envelope.get("details"))
+
+    legacy_detail = payload.get("detail")
+    if isinstance(legacy_detail, str):
+        return KitchenAPIError(response.status_code, legacy_detail)
+    if isinstance(legacy_detail, dict):
+        message = legacy_detail.get("message")
+        if isinstance(message, str):
+            return KitchenAPIError(response.status_code, message, legacy_detail)
+
+    return KitchenAPIError(response.status_code, fallback_message, payload)
