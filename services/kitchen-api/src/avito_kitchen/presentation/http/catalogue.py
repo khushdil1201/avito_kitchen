@@ -8,6 +8,7 @@ from avito_kitchen.application.catalogue import CatalogueService
 from avito_kitchen.domain.catalogue import MenuItem, Page, Restaurant, RestaurantNotFoundError
 from avito_kitchen.infrastructure.database import Database
 from avito_kitchen.infrastructure.repositories.catalogue import PostgresCatalogueRepository
+from avito_kitchen.observability import ErrorResponse
 
 router = APIRouter(prefix="/restaurants", tags=["Каталог"])
 
@@ -78,7 +79,12 @@ async def list_restaurants(
     "/{restaurant_id}/menu",
     response_model=MenuResponse,
     summary="Получить меню заведения",
-    responses={status.HTTP_404_NOT_FOUND: {"description": "Заведение не найдено"}},
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Заведение не найдено",
+        }
+    },
 )
 async def get_menu(
     restaurant_id: UUID,

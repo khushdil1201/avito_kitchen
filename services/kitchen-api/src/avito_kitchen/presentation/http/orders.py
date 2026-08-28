@@ -18,6 +18,7 @@ from avito_kitchen.domain.orders import (
 )
 from avito_kitchen.infrastructure.database import Database
 from avito_kitchen.infrastructure.repositories.orders import PostgresOrdersRepository
+from avito_kitchen.observability import ErrorResponse
 
 router = APIRouter(prefix="/orders", tags=["Заказы"])
 
@@ -82,7 +83,12 @@ def get_orders_service(request: Request) -> OrdersService:
     response_model=OrderResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Оформить заказ",
-    responses={status.HTTP_409_CONFLICT: {"description": "Каталог изменился или ключ занят"}},
+    responses={
+        status.HTTP_409_CONFLICT: {
+            "model": ErrorResponse,
+            "description": "Каталог изменился или ключ занят",
+        }
+    },
 )
 async def create_order(
     body: CreateOrderRequest,
@@ -133,7 +139,12 @@ async def create_order(
     "/{order_id}",
     response_model=OrderResponse,
     summary="Получить заказ",
-    responses={status.HTTP_404_NOT_FOUND: {"description": "Заказ не найден"}},
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": ErrorResponse,
+            "description": "Заказ не найден",
+        }
+    },
 )
 async def get_order(
     order_id: UUID,

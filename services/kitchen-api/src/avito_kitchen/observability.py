@@ -11,12 +11,39 @@ from fastapi import FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from starlette.exceptions import HTTPException
 
 REQUEST_ID_HEADER = "X-Request-ID"
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,128}$")
 _request_id: ContextVar[str] = ContextVar("request_id", default="-")
 logger = logging.getLogger("avito_kitchen.http")
+
+
+class ErrorBody(BaseModel):
+    """Машиночитаемое описание ошибки."""
+
+    code: str
+    message: str
+    details: Any = None
+    request_id: str
+
+
+class ErrorResponse(BaseModel):
+    """Единая оболочка ошибочного HTTP-ответа."""
+
+    error: ErrorBody
+
+
+DEFAULT_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
+    400: {"model": ErrorResponse, "description": "Некорректный запрос"},
+    401: {"model": ErrorResponse, "description": "Требуется авторизация"},
+    404: {"model": ErrorResponse, "description": "Объект не найден"},
+    409: {"model": ErrorResponse, "description": "Конфликт состояния"},
+    422: {"model": ErrorResponse, "description": "Ошибка валидации запроса"},
+    500: {"model": ErrorResponse, "description": "Внутренняя ошибка сервиса"},
+    503: {"model": ErrorResponse, "description": "Сервис временно недоступен"},
+}
 
 
 class JsonFormatter(logging.Formatter):

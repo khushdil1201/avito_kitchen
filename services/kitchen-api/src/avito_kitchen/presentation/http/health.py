@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel
 
 from avito_kitchen.infrastructure.database import Database
+from avito_kitchen.observability import ErrorResponse
 
 router = APIRouter(tags=["Состояние сервиса"])
 
@@ -28,7 +29,12 @@ async def health() -> HealthResponse:
     "/ready",
     response_model=HealthResponse,
     summary="Проверить готовность сервиса",
-    responses={status.HTTP_503_SERVICE_UNAVAILABLE: {"description": "База данных недоступна"}},
+    responses={
+        status.HTTP_503_SERVICE_UNAVAILABLE: {
+            "model": ErrorResponse,
+            "description": "База данных недоступна",
+        }
+    },
 )
 async def readiness(request: Request) -> HealthResponse:
     """Проверить доступность обязательных зависимостей приложения."""

@@ -1,4 +1,4 @@
-.PHONY: install lint type test check up down logs migrate
+.PHONY: install lint type test check openapi up down logs migrate
 
 install:
 	python -m pip install -e ".[dev]"
@@ -13,6 +13,9 @@ test:
 	pytest
 
 check: lint type test
+
+openapi:
+	python scripts/export_openapi.py
 
 up:
 	docker compose up --build --detach

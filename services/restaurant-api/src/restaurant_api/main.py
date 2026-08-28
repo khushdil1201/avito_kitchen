@@ -7,7 +7,11 @@ from pydantic import BaseModel
 from restaurant_api.config import RestaurantSettings, get_restaurant_settings
 from restaurant_api.kitchen_client import KitchenAPIError, KitchenClient
 from restaurant_api.models import Order, OrderList, OrderStatus
-from restaurant_api.observability import configure_logging, install_observability
+from restaurant_api.observability import (
+    DEFAULT_ERROR_RESPONSES,
+    configure_logging,
+    install_observability,
+)
 
 
 class HealthResponse(BaseModel):
@@ -93,6 +97,7 @@ def create_app(settings: RestaurantSettings | None = None) -> FastAPI:
         title="Тестовая кухня API",
         summary="Пример интеграции заведения и Авито.Кухни",
         version="0.1.0",
+        responses=DEFAULT_ERROR_RESPONSES,
     )
     install_observability(app)
 
