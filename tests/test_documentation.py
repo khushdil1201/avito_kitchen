@@ -55,3 +55,23 @@ def test_customer_journeys_cover_implemented_order_outcomes() -> None:
     assert "created → rejected" in restaurant_journey
     assert "accepted → preparing" in restaurant_journey
     assert "preparing → ready" in restaurant_journey
+
+
+def test_readme_covers_acceptance_topics_and_has_valid_local_links() -> None:
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    required_sections = {
+        "## Быстрый запуск",
+        "## Сквозной демонстрационный сценарий",
+        "## Архитектура",
+        "## Ключевые технические решения",
+        "## Осознанные упрощения MVP",
+        "## Путь масштабирования",
+        "## Матрица критериев приёмки",
+    }
+
+    assert required_sections.issubset(set(readme.splitlines()))
+
+    local_links = re.findall(r"\[[^]]+]\((?!https?://)([^)]+)\)", readme)
+    assert local_links
+    for link in local_links:
+        assert (PROJECT_ROOT / link).exists(), f"Локальная ссылка отсутствует: {link}"
