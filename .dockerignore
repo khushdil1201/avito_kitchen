@@ -9,5 +9,6 @@ __pycache__
 .pytest_cache
 .ruff_cache
 htmlcov
-tests
-
+tests/*
+!tests/e2e/
+!tests/e2e/**

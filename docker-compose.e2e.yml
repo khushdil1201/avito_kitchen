@@ -1,0 +1,94 @@
+name: avito-kitchen-e2e
+
+services:
+  postgres-e2e:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: avito_kitchen_e2e
+      POSTGRES_USER: avito_kitchen_e2e
+      POSTGRES_PASSWORD: e2e-only-password
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 2s
+
+  migrate-e2e:
+    build:
+      context: .
+      dockerfile: services/kitchen-api/Dockerfile
+    command: ["python", "-m", "avito_kitchen.infrastructure.migrations"]
+    environment:
+      DATABASE_URL: postgresql://avito_kitchen_e2e:e2e-only-password@postgres-e2e:5432/avito_kitchen_e2e
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+    restart: "no"
+
+  kitchen-api-e2e:
+    build:
+      context: .
+      dockerfile: services/kitchen-api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://avito_kitchen_e2e:e2e-only-password@postgres-e2e:5432/avito_kitchen_e2e
+      PARTNER_API_TOKEN: e2e-partner-token
+      PARTNER_RESTAURANT_ID: 10000000-0000-4000-8000-000000000001
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres-e2e:
+        condition: service_healthy
+      migrate-e2e:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/ready')
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 2s
+
+  restaurant-api-e2e:
+    build:
+      context: .
+      dockerfile: services/restaurant-api/Dockerfile
+    environment:
+      KITCHEN_API_URL: http://kitchen-api-e2e:8000
+      PARTNER_API_TOKEN: e2e-partner-token
+      KITCHEN_API_TIMEOUT_SECONDS: 3
+      LOG_LEVEL: INFO
+    depends_on:
+      kitchen-api-e2e:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://localhost:8000/health')
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 2s
+
+  tests-e2e:
+    build:
+      context: .
+      dockerfile: tests/e2e/Dockerfile
+    environment:
+      KITCHEN_API_URL: http://kitchen-api-e2e:8000
+      RESTAURANT_API_URL: http://restaurant-api-e2e:8000
+    depends_on:
+      kitchen-api-e2e:
+        condition: service_healthy
+      restaurant-api-e2e:
+        condition: service_healthy
+    command: ["pytest", "-p", "no:cacheprovider", "-m", "e2e", "tests/e2e", "-v"]
+    restart: "no"
