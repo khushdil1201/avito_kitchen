@@ -54,4 +54,3 @@ class KitchenClient:
                 detail = response.text
             raise KitchenAPIError(response.status_code, detail)
         return response.json()
-

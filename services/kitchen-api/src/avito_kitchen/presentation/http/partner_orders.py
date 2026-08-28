@@ -107,4 +107,3 @@ async def transition_partner_order(
             },
         ) from error
     return _order_response(result.order)
-

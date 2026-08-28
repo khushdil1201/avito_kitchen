@@ -46,4 +46,3 @@ class OrderList(BaseModel):
     """Очередь заказов заведения."""
 
     items: list[Order]
-

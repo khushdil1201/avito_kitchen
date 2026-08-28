@@ -55,4 +55,3 @@ class PartnerOrdersService:
             order_id=order_id,
             target_status=target_status,
         )
-
