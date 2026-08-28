@@ -3,7 +3,7 @@ title CJM заведения-партнёра
 
 start
 :Открыть очередь новых заказов\nв Restaurant API;
-:Restaurant API запрашивает created-заказы\nу Kitchen API с X-Partner-Token;
+:Restaurant API запрашивает created-заказы\nу Kitchen API с Bearer-токеном;
 
 if (Токен корректен?) then (да)
   :Изучить состав, сумму и адрес доставки;

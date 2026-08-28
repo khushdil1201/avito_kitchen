@@ -3,7 +3,8 @@ from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
 from avito_kitchen.application.partner_orders import PartnerOrdersService
@@ -20,6 +21,7 @@ from avito_kitchen.infrastructure.repositories.partner_orders import (
 from avito_kitchen.presentation.http.orders import OrderResponse, _order_response
 
 router = APIRouter(prefix="/partner/orders", tags=["Интеграция заведения"])
+bearer_scheme = HTTPBearer(auto_error=False)
 
 
 class PartnerTargetStatus(StrEnum):
@@ -45,14 +47,19 @@ class PartnerOrderListResponse(BaseModel):
 
 def authenticate_partner(
     settings: Annotated[Settings, Depends(get_settings)],
-    token: Annotated[str | None, Header(alias="X-Partner-Token")] = None,
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None,
+        Depends(bearer_scheme),
+    ],
 ) -> UUID:
     """Проверить демонстрационный токен и вернуть связанное заведение."""
     expected = settings.partner_api_token.get_secret_value()
+    token = credentials.credentials if credentials is not None else None
     if token is None or not secrets.compare_digest(token, expected):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Неверный токен заведения",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     return settings.partner_restaurant_id
 

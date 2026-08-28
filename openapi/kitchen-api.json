@@ -408,6 +408,12 @@
         "title": "TransitionOrderRequest",
         "type": "object"
       }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
     }
   },
   "info": {
@@ -771,22 +777,6 @@
               "title": "Limit",
               "type": "integer"
             }
-          },
-          {
-            "in": "header",
-            "name": "X-Partner-Token",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Partner-Token"
-            }
           }
         ],
         "responses": {
@@ -871,6 +861,11 @@
             "description": "Сервис временно недоступен"
           }
         },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "summary": "Получить очередь заказов",
         "tags": [
           "Интеграция заведения"
@@ -889,22 +884,6 @@
               "format": "uuid",
               "title": "Order Id",
               "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-Partner-Token",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Partner-Token"
             }
           }
         ],
@@ -1000,6 +979,11 @@
             "description": "Сервис временно недоступен"
           }
         },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "summary": "Изменить статус заказа",
         "tags": [
           "Интеграция заведения"

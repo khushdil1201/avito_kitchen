@@ -1,6 +1,12 @@
 import httpx
 
-from restaurant_api.kitchen_client import _parse_error_response
+from restaurant_api.kitchen_client import KitchenClient, _parse_error_response
+
+
+def test_kitchen_client_uses_standard_bearer_header() -> None:
+    client = KitchenClient(base_url="http://kitchen", token="partner-token", timeout=3)
+
+    assert client._headers == {"Authorization": "Bearer partner-token"}
 
 
 def test_kitchen_client_parses_structured_error_envelope() -> None:

@@ -1,6 +1,7 @@
 import json
 import logging
 import re
+from collections.abc import Mapping
 from contextvars import ContextVar
 from datetime import UTC, datetime
 from time import perf_counter
@@ -115,7 +116,13 @@ def install_observability(app: FastAPI) -> None:
             message, details = detail.get("message", "Ошибка запроса"), detail
         else:
             message, details = "Ошибка запроса", detail
-        return _error_response(exc.status_code, _error_code(exc.status_code), message, details)
+        return _error_response(
+            exc.status_code,
+            _error_code(exc.status_code),
+            message,
+            details,
+            headers=exc.headers,
+        )
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(
@@ -134,9 +141,11 @@ def _error_response(
     code: str,
     message: str,
     details: Any = None,
+    headers: Mapping[str, str] | None = None,
 ) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
+        headers=headers,
         content=jsonable_encoder(
             {
                 "error": {

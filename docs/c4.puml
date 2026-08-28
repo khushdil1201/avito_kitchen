@@ -20,7 +20,7 @@ rectangle "Демонстрационное заведение" as restaurant_bo
 
 customer --> kitchen_api : Ищет блюда, создаёт и\nотслеживает заказ\nHTTPS/JSON
 employee --> restaurant_api : Просматривает очередь,\nпринимает или отклоняет заказ\nHTTPS/JSON
-restaurant_api --> kitchen_api : Читает очередь и меняет статусы\nHTTP/JSON + X-Partner-Token
+restaurant_api --> kitchen_api : Читает очередь и меняет статусы\nHTTP/JSON + Bearer token
 kitchen_api --> postgres : Читает и изменяет данные\nSQL/TCP
 
 note bottom of restaurant_api

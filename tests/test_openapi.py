@@ -39,3 +39,13 @@ def test_openapi_documents_actual_error_envelope(app: FastAPI) -> None:
                     continue
                 documented_schema = response["content"]["application/json"]["schema"]
                 assert documented_schema == {"$ref": "#/components/schemas/ErrorResponse"}
+
+
+def test_partner_api_documents_bearer_authentication() -> None:
+    schema = create_kitchen_app().openapi()
+
+    assert schema["components"]["securitySchemes"]["HTTPBearer"] == {
+        "type": "http",
+        "scheme": "bearer",
+    }
+    assert schema["paths"]["/api/v1/partner/orders"]["get"]["security"] == [{"HTTPBearer": []}]

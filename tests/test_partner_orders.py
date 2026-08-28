@@ -99,7 +99,7 @@ async def request(
     service = PartnerOrdersService(repository)
     app.dependency_overrides[get_partner_orders_service] = lambda: service
     transport = ASGITransport(app=app)
-    headers = {"X-Partner-Token": token} if token is not None else {}
+    headers = {"Authorization": f"Bearer {token}"} if token is not None else {}
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         return await client.request(method, path, headers=headers, json=json)
 
@@ -112,6 +112,7 @@ def test_partner_queue_requires_valid_token() -> None:
     )
 
     assert response.status_code == 401
+    assert response.headers["WWW-Authenticate"] == "Bearer"
 
 
 def test_partner_reads_created_order_queue() -> None:

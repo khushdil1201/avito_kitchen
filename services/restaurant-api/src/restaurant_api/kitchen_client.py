@@ -21,7 +21,7 @@ class KitchenClient:
 
     def __init__(self, *, base_url: str, token: str, timeout: float) -> None:
         self._base_url = base_url
-        self._headers = {"X-Partner-Token": token}
+        self._headers = {"Authorization": f"Bearer {token}"}
         self._timeout = timeout
 
     async def list_orders(self, order_status: OrderStatus | None) -> OrderList:
