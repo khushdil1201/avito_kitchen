@@ -11,13 +11,13 @@ requires-python = ">=3.12"
 dependencies = [
     "asyncpg>=0.30,<1",
     "fastapi>=0.116,<1",
+    "httpx>=0.28,<1",
     "pydantic-settings>=2.10,<3",
     "uvicorn[standard]>=0.35,<1",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "httpx>=0.28,<1",
     "mypy>=1.17,<2",
     "pytest>=8.4,<9",
     "ruff>=0.12,<1",
@@ -25,7 +25,10 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["services/kitchen-api/src/avito_kitchen"]
+packages = [
+    "services/kitchen-api/src/avito_kitchen",
+    "services/restaurant-api/src/restaurant_api",
+]
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers"
@@ -34,7 +37,7 @@ testpaths = ["tests"]
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-src = ["services/kitchen-api/src", "tests"]
+src = ["services/kitchen-api/src", "services/restaurant-api/src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
@@ -42,5 +45,5 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-packages = ["avito_kitchen"]
-mypy_path = "services/kitchen-api/src"
+packages = ["avito_kitchen", "restaurant_api"]
+mypy_path = ["services/kitchen-api/src", "services/restaurant-api/src"]
