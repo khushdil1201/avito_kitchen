@@ -13,12 +13,15 @@ CUSTOMER_ID = "30000000-0000-4000-8000-000000000001"
 OTHER_CUSTOMER_ID = "30000000-0000-4000-8000-000000000002"
 
 
-def order_body(menu_item_id: str = MENU_ITEM_ID) -> dict[str, object]:
+def order_body(
+    menu_item_id: str = MENU_ITEM_ID,
+    quantity: int = 2,
+) -> dict[str, object]:
     return {
         "customer_id": CUSTOMER_ID,
         "restaurant_id": RESTAURANT_ID,
         "delivery_address": "ул. Интеграционная, 1",
-        "items": [{"menu_item_id": menu_item_id, "quantity": 2}],
+        "items": [{"menu_item_id": menu_item_id, "quantity": quantity}],
     }
 
 
@@ -69,6 +72,18 @@ def test_real_order_flow_through_both_services_and_postgres() -> None:
         )
         assert replay.status_code == 200
         assert replay.json() == order
+
+        idempotency_conflict = kitchen.post(
+            "/api/v1/orders",
+            headers={"Idempotency-Key": idempotency_key},
+            json=order_body(quantity=1),
+        )
+        assert idempotency_conflict.status_code == 409
+        conflict_error = idempotency_conflict.json()["error"]
+        assert conflict_error["code"] == "conflict"
+        assert conflict_error["message"] == (
+            "Ключ идемпотентности уже использован для другого запроса"
+        )
 
         hidden = kitchen.get(
             f"/api/v1/orders/{order_id}", params={"customer_id": OTHER_CUSTOMER_ID}
